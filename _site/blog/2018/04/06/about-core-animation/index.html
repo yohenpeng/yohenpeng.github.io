@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="iOS开发者，一枚有梦想的奶爸">
+    <meta name="keyword"  content="iOS Xcode 移动开发">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>核心动画读书笔记(一) - 依汉的博客 | Yohen Blog</title>
+
+    <link rel="canonical" href="http://localhost:4000/blog/2018/04/06/about-core-animation/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="http://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Yohen Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('/img/home-bg.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>核心动画读书笔记(一)</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by Yohen Blog on April 6, 2018</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h2 id="图层树">图层树</h2>
+<p><em>Core Animation听起来是很容易让人误以为这是个动画框架，类似于Core Image,Core Foundation的内置框架，但是其实动画只是Core Anmiation特性的一部分，更多的是一个复合引擎，它的职责就是尽可能快的组合屏幕上不同的可视内容，分解成独立的图层，存储在一个叫做图层树的体系中，于是这个树形成了UIKit以及iOS应用程序之中你能在屏幕上看见的一切基础。</em></p>
+
+<h4 id="uiview--calayer">UIView &amp; CALayer</h4>
+<p>每一个UIview都有一个CALayer实例的图层属性，也就是所谓的backing layer，视图的职责就是创建并管理这个图层，以确保当子视图在层级关系中添加或者被移除的时候，他们关联的图层也同样对应在层级关系树当中有相同的操作。实际上这些UIView背后关联的图层才是真正用来在屏幕上显示和做动画的，UIView只是对它的一个封装。封装的抽象性越高，也就越不灵活，类似于以下功能就没有暴露出来。</p>
+<ol>
+  <li>阴影，圆角，带颜色的边框</li>
+  <li>3D 变换</li>
+  <li>非矩形范围</li>
+  <li>透明遮罩</li>
+  <li>多级非线性动画</li>
+</ol>
+
+<p>所以我们有必要去探索Core Animation的一切。</p>
+
+<p>为什么iOS要基于UIView和CALayer提供两个平行的层级关系呢？为什么不用一个简单的层级来处理所有事情呢？原因在于要做职责分离，这样也能避免很多重复代码</p>
+
+<h2 id="寄宿图">寄宿图</h2>
+<h4 id="contetns属性">contetns属性</h4>
+<h6 id="contents">contents</h6>
+<p>寄宿图，一般情况下都是用来赋值，将UIImage转换成CGImage，之所以contents类型是id，是因为在Mac OS系统上CGImage和NSIamge类型的值都有效果。</p>
+
+<p>(那平时我们没有设置寄宿图的Layer，只是设置一些属性类似backgroundColor，在屏幕上渲染之后，我们可以直接访问吗？答案是不可以，对于一个 UIView，如果不提供 bitmap （设置 layer 的 contents 属性），也不实现 drawRect 或者 CALayer drawing 的那几个 draw 函数，那么一个 UIView 的内容会根据这个 UIView 的状态（ backgroundColor，bounds，其实都是 layer 的状态），提交到 render server，并由 render server 调用底层的图形 API 来绘制这个 UIView 的内容，并将最终绘制的 bitmap 结果通过类似 glReadPixels 的 API 从显寸上复制到 CPU 内存里，这部分内存由 CALayer 的内部私有变量来负责持有，这部分数据目前是无法直接获取到的，只能通过 CALayer 的 renderInContext:等 API 间接的取到，这里与 CALayer 的 contents 属性不同，contents 只是用来为一个 CALayer 提供内容的。 
+所以一个 UIView 有三种方式来生成内容，分别是 drawRect：，设置 layer 的 contents 属性，设置 UIView 本身或者 layer 的属性，这三种方式最终内存占用是一模一样的，但是消耗的 CPU 和 GPU 资源却不同，第一种需要调用 CPU 绘图 API 来绘制图形，CPU bound ；第二种虽然不需要调用 CPU 来绘图，但是可能会使用 CPU 来解压缩图片文件，所以也是 CPU bound ；第三种 CPU 只负责必要的状态修改，由 GPU 来完成主要的绘图工作，因为 GPU 绘图效率比 CPU 高，所以这种方式应该是效率最高的，整体的性能消耗也最低，GPU bound)</p>
+
+<h6 id="contentsgravity">contentsGravity</h6>
+<p>和UIImageView的contentMode类似，目的是为了决定内容在图层的边界中怎么对齐。其中:
+kCAGravityResize等价于UIViewContentModeScaleToFill，
+kCAGravityResizeAspect等价于UIViewContentModeScaleAspectFit，
+kCAGravityResizeAspectFill等价于UIViewContentModeScaleAspectFill</p>
+
+<h6 id="contentsscale">contentsScale</h6>
+<p>定义了寄宿图的像素尺寸和视图大小的比例(sizeof(image)/sizeof(view))，默认情况下他是一个值为1.0的浮点数 ,将回以每个点1个像素绘制图片，如果设置为2.0，则会以每个点2个像素绘制图片，这就是retina屏幕。一般情况下可如下设置</p>
+<div class="language-objectivec highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">layer</span><span class="p">.</span><span class="n">contentsScale</span> <span class="o">=</span> <span class="p">[</span><span class="n">UIScreen</span> <span class="nf">mainScreen</span><span class="p">].</span><span class="n">scale</span>
+</code></pre></div></div>
+
+<h6 id="masktobounds">maskToBounds</h6>
+<p>在View层有个叫clipsToBounds的属性可以相对应，默认情况下，UIView仍然会绘制超过边界的内容或者子视图，在CALayer下也是这样。如果设置maskToBounds为YES则会修剪超过边界的内容。</p>
+
+<p>(使用CALayerDelegate绘制寄宿图不支持绘制超过边界的内容，使用CAShapeLayer支持绘制超过边界的内容)</p>
+
+<h6 id="contentsrect">contentsRect</h6>
+<p>这个属性允许我们在图层边框内显示寄宿图的一部分，需要注意的是这里使用单位坐标，0到1之间。比如我们取左上角部分：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UIImage *image = [UIImage imageNamed:@"test"];
+sublayer.contents = (__bridge id _Nullable)(image.CGImage);
+sublayer.contentsRect = CGRectMake(0, 0, 0.5, 0.5);
+</code></pre></div></div>
+
+<h6 id="contentscenter">contentsCenter</h6>
+<p>可拉伸图片，这里也是使用单位坐标，0到1之间，和UIImage的resizableImageWithCapInsets类似。</p>
+
+<h4 id="custom-drawing">Custom Drawing</h4>
+<p>如果不需要自定义绘图都能实现需求，那就不要创建这个方法，如果实现了drawRect:方法，系统就会为视图分配一个寄宿图，这个寄宿图的像素尺寸等于视图大小乘以contentScale的值，这会造成CPU资源和内存的浪费，这也是为什么苹果建议，如果没有自定义绘制的任务就不要在子类中写一个空的drawRect方法。
+当一个Layer需要绘制的时候，会请求他的代理给他一个寄宿图来显示</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-(void)displayPayer:(CALayer *)layer;
+</code></pre></div></div>
+
+<p>如果代理没有这个方法，CAlayer就会转而尝试调用下面这个方法：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-(void)drawLayer:(CALayer *)layer inContext:(CGContextRef)ctx;
+</code></pre></div></div>
+<p>调用这个方法之前，会创建一个Core Graphics的绘制上下文，作为ctx参数传入。
+现在回想UIView实现的drawRect里面获取到的绘制上下文就是这个时候创建的。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-(void)drawRect:(CGRect)rect{
+    ...
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    ...
+}
+</code></pre></div></div>
+
+<h2 id="图层几何学">图层几何学</h2>
+<h4 id="布局">布局</h4>
+<ul>
+  <li>frame 是相对于父视图的位置坐标，而且bounds对应的是自己内部坐标系;</li>
+  <li>frame 其实是个虚拟属性，根据bounds，center，transform合成而来，并不是独立存在；</li>
+</ul>
+
+<h4 id="锚点">锚点</h4>
+<ul>
+  <li>anchorPoint 是用来移动图片的把柄，默认位于图层的中心点；</li>
+  <li>View的center/Layer的position 都是anchorPoint相对于父试图的位置；</li>
+  <li>position和anchorPoint修改其中任何一个值，都不会影响另外一个。anchorPoint是position在图层内部的相对位置；</li>
+</ul>
+
+<h4 id="坐标系">坐标系</h4>
+<p>zPosition可以用来改变图层的显示顺序，越大就在上面，但不可以改变事件传递的顺序；
+坐标系之间转换method：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- (CGPoint)convertPoint:(CGPoint)point toView:(nullable UIView *)view;
+- (CGPoint)convertPoint:(CGPoint)point fromView:(nullable UIView *)view;
+- (CGRect)convertRect:(CGRect)rect toView:(nullable UIView *)view;
+- (CGRect)convertRect:(CGRect)rect fromView:(nullable UIView *)view;
+</code></pre></div></div>
+
+<h4 id="hit-testing">Hit Testing</h4>
+<p>View和Layer方法都能找到对应的，我们都可以实现下面方法来改变响应者选择的逻辑</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//UIView
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event;
+- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event;
+
+//Layer
+- (nullable CALayer *)hitTest:(CGPoint)p;
+- (BOOL)containsPoint:(CGPoint)p;
+</code></pre></div></div>
+
+<h4 id="自动布局">自动布局</h4>
+<ul>
+  <li>frame绝对布局，代码效率低，性能好</li>
+  <li>autoLayout，代码效率高，随着视图层次增加，性能较差</li>
+  <li>第三方布局库，方案还是挺多的，比如facebook的YogaKit，ComponentKit</li>
+</ul>
+
+<h2 id="视觉效果">视觉效果</h2>
+<h4 id="圆角">圆角</h4>
+<ul>
+  <li>cornerRadius 这个曲率值只影响背景颜色而不影响背景图片或是子图层</li>
+  <li>masksToBounds 设置为YES的话，图层里面的所有东西都会被截取</li>
+</ul>
+
+<h4 id="图层边框">图层边框</h4>
+<ul>
+  <li>borderWidth 边框宽度</li>
+  <li>borderColor 边框颜色</li>
+</ul>
+
+<h4 id="阴影">阴影</h4>
+<ul>
+  <li>shadowOpacity 不透明度 0.0（不可以见）～1.0（完成不透明）</li>
+  <li>shadowColor   默认是黑色</li>
+  <li>shadowOffset  阴影的方向和距离，默认值是CGSize（0，-3）</li>
+  <li>shadowRadius  阴影的模糊度，越大阴影越模糊，图层看上去就会更明显</li>
+</ul>
+
+<h6 id="shadowpath属性">shadowPath属性</h6>
+<p>我们已经知道图层阴影并不是总是方的，而是从图层内容的形状继承而来。但是实时计算阴影是一个非常消耗资源的，特别是很多子图层，每个图层还有一个有透明效果的寄宿图的时候。如果事先知道阴影的样子，你可以指定一个shadowPath来提高性能</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[myView.layer setShadowPath：[[UIBezierPath bezierPathWithRect：myView.bounds] CGPath];
+</code></pre></div></div>
+<h4 id="图层蒙板">图层蒙板</h4>
+<p>mask图层定义了父图层的部分可见区域，mask图层的Color属性是无关紧要的，真正重要的是图层的轮廓。
+CALayer蒙板图片真正厉害的地方在于不局限于静态图，可以代码实时生成。</p>
+
+<h4 id="拉伸过滤">拉伸过滤</h4>
+<p>当素材的尺寸和图层大小比例刚好1:1是最好的，像素没有被压缩也没有被拉伸，CPU不需要为此额外的计算</p>
+
+<ul>
+  <li>KCAFilterLinear 双线性滤波算法</li>
+  <li>kCAFilterNearest 没有斜线的小图应该用最近过滤</li>
+  <li>KCAFilterTrilinear  三线性滤波算法，存储了多个大小情况下的图片，也叫多重贴图</li>
+</ul>
+
+<h4 id="组透明">组透明</h4>
+<p>组透明其实用光栅化实现，如果shouldRasterize设置为YES，在应用透明度之前，其子图层都会整合成一个整体的图片，这样就没有透明度混合的问题了。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>button.layer.shouldRasterize = YES;
+button.layer.rasterizationScale = [UIScreen mainScreen].scale;
+</code></pre></div></div>
+
+<h2 id="变换">变换</h2>
+<p>旋转角度使用左手坐标系，拇指为X Y Z方向。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>self.view.layer.affineTransform = CGAffineTransformMakeScale(2, 2);
+self.view.layer.transform = CATransform3DMakeScale(2, 2, 2);
+</code></pre></div></div>
+
+<p>3D转换：由于尽管Core Animation图层存在于3D空间之中，但他们并存在同一个3D空间，每个图层的3D场景其实都是扁平化的，当你从正面观察一个图层，看到的实际上由子图层创建的想象出来的3D场景，但当你倾斜这个图层，你会发现实际上这个3D场景仅仅是被绘制在图层的表面。</p>
+
+<p>固体对象这些日常使用较少，后面再补充。</p>
+
+<h2 id="专用图层">专用图层</h2>
+<ul>
+  <li>CAShapeLayer 通过矢量绘制图形而不是bitMap绘制的图层子类，直接将数据提交到GPU来处理</li>
+  <li>CATextLayer  其实iOS7之后，使用textLayer和直接使用富文本性能上没傻差别，因为现在UILabel使用的TextKit，其实也是基于CoreText封装的</li>
+  <li>CATransformLayer</li>
+  <li>CAGradientLayer 颜色渐变图层，使用硬件加速</li>
+  <li>CAReplicationLayer 高效生成许多类似的图层</li>
+  <li>CAScrollLayer</li>
+  <li>CATiledLayer  适合处理大图</li>
+  <li>CAEmittedLayer 高性能粒子引擎</li>
+  <li>CAEAGLLyaer  OPENGL图层</li>
+  <li>AVPlayerLayer  播发视频</li>
+</ul>
+
+<h2 id="隐式动画">隐式动画</h2>
+<h4 id="事务">事务</h4>
+<p>没有关联View层的Layer，改变CAlayer的一个可做动画的属性，都会有默认动画，持续时间0.25s,次数为1次。这一切都是默认的行为，你不需要做额外的操作。</p>
+
+<p>即使你没有显示用[CATransaction begin]和[CATransaction commit]开始和提交事务，任何一次在run loop循环中属性的改变都会被集中起来，然后做一次0.25秒的动画。</p>
+
+<p>其实UIView中的beginAnimation:context:和commitAnimations:context:都是对应上面事务的操作。</p>
+
+<h4 id="图层行为">图层行为</h4>
+<p>对于有关联View的Layer，我们称之为rootLayer，默认把隐式动画都关闭了，下面的流程第一步就返回了nil。</p>
+<ol>
+  <li>检查CALayerDelegate的actionForLayer：forKey，有直接调用并返回结果；</li>
+  <li>没有委托或者委托没有实现，则检查自身的actions字典；</li>
+  <li>如果actions字典没有包含对应的属性，那么图层接着在它的style字典中搜索属性名；</li>
+  <li>如果在style也找不到对应的行为，那么图层将会直接调用定义每个属性的标准行为的defaultActionForKey:方法。</li>
+</ol>
+
+<p>过渡动画</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CATransition *transition = [CATransition animation];
+transition.tyle = kCATransitionPush;
+transition.subtyle = KCATransitionFromLeft;
+self.colorLayer.actions = @{@"backgroundColor":transition};
+</code></pre></div></div>
+
+<p>模型树/呈现树/渲染树，其中渲染树实在SpringBoard进程里面的，我们无法获取。呈现树就是我们屏幕中看到的状态，呈现树和模型树可以相互转换.</p>
+
+<h2 id="显示动画">显示动画</h2>
+<h4 id="属性动画">属性动画</h4>
+<p>想在动画完成后，同步更新Layer的属性值，我们可以在animationDidStop:finished:中操作，假如是非rootLayer，我们需要设置一个新的事务，并且禁用图层行为，否则动画会发生两次，一次是之前的显式动画，另一次是因为结束之后的隐式动画。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[CATransaction begin];
+[CATransaction setDisableAction:YES];
+//更新属性值...
+[CATransaction commit];
+</code></pre></div></div>
+
+<p>为了在动画结束回调中能区分动画对象，我们可以对animation进行KVC操作</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[baseAnimation setValue:self.animationView forKey:@"handleView"];
+</code></pre></div></div>
+<h6 id="关键帧动画">关键帧动画</h6>
+<p>CAKeyframeAnimation 关键帧动画，除了提供一个数组的值可以按照颜色变化做动画，还有另外一种方式指定动画，就是使用CGPath。path属性可以用一种直观的方式，使用Core Graphics函数定义运行序列来绘制动画。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CAKeyframeAnimation *animation = [CAKeyframeAnimation animation];
+animation.keyPath = @"position";
+animation.duration = 4.0;
+animation.path = bezierPath.CGPath;
+animation.rotationMode = KCAAnimationRotateAuto;
+[shipLayer addAnimation:animation forKey:nil];
+</code></pre></div></div>
+<p>其中设置KCAAnimationRotateAuto能够使图层根据曲线的切线自动旋转。</p>
+
+<h6 id="虚拟属性">虚拟属性</h6>
+<p>对transfrom属性做动画经常使不符合预期的，这是因为变换矩阵不能和其他类似position.x的属性值做单纯的数值加减。</p>
+
+<p>下面这些使苹果提供给我们做动画使用的keyPath，其中toValue和byValue需要区分，绝对值和相对值。</p>
+<ul>
+  <li>transform.rotation.x 围绕x轴翻转 参数：角度 angle2Radian(4)</li>
+  <li>transform.rotation.y 围绕y轴翻转 参数：同上</li>
+  <li>transform.rotation.z 围绕z轴翻转 参数：同上</li>
+  <li>transform.rotation 默认围绕z轴</li>
+  <li>transform.scale.x x方向缩放 参数：缩放比例 1.5</li>
+  <li>transform.scale.y y方向缩放 参数：同上</li>
+  <li>transform.scale.z z方向缩放 参数：同上</li>
+  <li>transform.scale 所有方向缩放 参数：同上</li>
+  <li>transform.translation.x x方向移动 参数：x轴上的坐标 100</li>
+  <li>transform.translation.y x方向移动 参数：y轴上的坐标</li>
+  <li>transform.translation.z x方向移动 参数：z轴上的坐标</li>
+  <li>transform.translation 移动 参数：移动到的点 （100，100）</li>
+  <li>opacity 透明度 参数：透明度 0.5</li>
+  <li>backgroundColor 背景颜色 参数：颜色 (id)[[UIColor redColor] CGColor]</li>
+  <li>cornerRadius 圆角 参数：圆角半径 5</li>
+  <li>borderWidth 边框宽度 参数：边框宽度 5</li>
+  <li>bounds 大小 参数：CGRect</li>
+  <li>contents 内容 参数：CGImage</li>
+  <li>contentsRect 可视内容 参数：CGRect 值是0～1之间的小数</li>
+  <li>hidden 是否隐藏</li>
+  <li>position</li>
+  <li>shadowColor</li>
+  <li>shadowOffset</li>
+  <li>shadowOpacity</li>
+  <li>shadowRadius</li>
+</ul>
+
+<h6 id="动画组">动画组</h6>
+<p>对CAAnimationGroup.animations操作即可。</p>
+
+<h6 id="过渡">过渡</h6>
+<p>属性动画只对图层的可动画属性起作用，所以如果要改变一个不能动画的属性（比如图片），或者从层级关系中添加或者移除图层，属性动画将不起作用，于是有了过渡的概念。过渡并不像属性动画那样平滑地在两个值之间做动画，而是影响到整个图层的变化。过渡动画首先展示之前的图层外观，然后通过一个交换过渡到新的外观。
+CATransition的type:</p>
+<ol>
+  <li>kCATransitionFade 淡入淡出效果</li>
+  <li>kCATransitonMoveIn 新的图层外观进来</li>
+  <li>kCATransitionPush 2和4的效果叠加</li>
+  <li>kCATransitionReveal 旧的图层外观出去</li>
+</ol>
+
+<p>subType:</p>
+<ol>
+  <li>kCATransitonFromRight</li>
+  <li>kCATransitonFromLeft</li>
+  <li>kCATransitonFromTop</li>
+  <li>kCATransitonFromBottom</li>
+</ol>
+
+<p>和属性动画不同，对指定的图层一次只能使用一次CATransition，因此，无论你对动画的键设置什么值，过渡动画都会对它的键设置为“transition”，也就是常量kCATransition。</p>
+
+<p>对图层树的动画：
+要确保CATransition添加到的图层在过渡动画发生时不会在树状结构中被移除，否则CATransition将会和图层一起被移除，这里可以将动画添加到被影响图层的superLayer。</p>
+
+<h6 id="在动画过程中国取消动画">在动画过程中国取消动画</h6>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-(void)removeAnimationForKey:(NSString*)key;
+-(void)removeAllAnimations;
+</code></pre></div></div>
+
+<p>待续….</p>
+
+
+
+                <hr>
+
+                
+                <!-- 多说 Share start -->
+                </style>
+                <div class="ds-share"
+                    style="text-align: right"
+                    data-thread-key="/blog/2018/04/06/about-core-animation"
+                    data-title="核心动画读书笔记(一)"
+                    data-url="http://localhost:4000/blog/2018/04/06/about-core-animation/"
+                    data-images="http://localhost:4000/img/home-bg.jpg"
+                    data-content="图层树
+Core Animation听起来是很容易让人误以为这是个动画框架，类似于Core Image,Core Foundation的内置框架，但是其实... | 依汉的博客 | Yohen Blog " >
+                    <div class="ds-share-inline">
+                      <ul  class="ds-share-icons-16">
+                        <li data-toggle="ds-share-icons-more"><a class="ds-more" href="#">分享到：</a></li>
+                        <li><a class="ds-wechat flat" href="javascript:void(0);" data-service="wechat">微信</a></li>
+                        <li><a class="ds-weibo flat" href="javascript:void(0);" data-service="weibo">微博</a></li>
+                        <li><a class="ds-douban flat" href="javascript:void(0);" data-service="douban">豆瓣</a></li>
+                      </ul>
+                      <div class="ds-share-icons-more">
+                      </div>
+                    </div>
+                <hr>
+                </div>
+                <!-- 多说 Share end-->
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/blog/2017/03/15/tablecell-custom-del/" data-toggle="tooltip" data-placement="top" title="自定义TableCell删除效果手势问题解决">&larr; Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+
+
+                
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread"
+                        data-thread-key="/blog/2018/04/06/about-core-animation"
+                        data-title="核心动画读书笔记(一)"
+                        data-url="http://localhost:4000/blog/2018/04/06/about-core-animation/" >
+                    </div>
+                </div>
+                <!-- 多说评论框 end -->
+                
+
+                
+
+            </div>
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User by Hux
+    var _user = 'yohenpeng';
+
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user };
+    (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("http://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/yohenpeng">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/yohenpeng">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+
+                    
+                    <li>
+                        <a target="_blank" href="https://www.facebook.com/yohenpeng">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/yohenpeng">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Yohen Blog 2019
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("http://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-49627206-1';
+    var _gaDomain = 'yohenpeng.me';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+<script>
+    // dynamic User by Hux
+    var _baId = '4cc1f2d8f3067386cc5cdb626a202900';
+
+    // Originial
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?" + _baId;
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
