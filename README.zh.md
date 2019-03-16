@@ -128,6 +128,8 @@ featured-condition-size: 1     # A tag will be featured if the size of it is mor
 
 #### Friends
 
+
+
 好友链接部分。这会在全部页面显示。
 
 设置是在 `_config.yml`文件里面的`Friends`那块，自己加吧。
@@ -229,6 +231,3 @@ There are a number of tasks it performs like minification of the JavaScript, com
 2. 感谢[@BrucZhaoR](https://github.com/BruceZhaoR)的中文翻译 
 
 3. 感谢 Jekyll、Github Pages 和 Bootstrap!
-
-
-
