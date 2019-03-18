@@ -1,8 +1,12 @@
 ---
 layout: post
 title: 核心动画读书笔记(一)
+subTitle: 你看到不一定是对的
 description: 核心动画读书笔记
-category: blog
+catalog: true
+tags:
+    - iOS
+    - 动画
 ---
 
 
