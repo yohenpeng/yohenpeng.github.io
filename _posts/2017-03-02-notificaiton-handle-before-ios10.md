@@ -2,7 +2,10 @@
 layout: post
 title:  iOS 10和低版本下，前后台收到消息处理方案
 description: iOS 10和低版本下，前后台收到消息处理方案
-category: blog
+catalog: true
+tags:
+    - iOS
+    - 通知处理
 ---
 
 

@@ -2,7 +2,10 @@
 layout: post
 title:  自定义TableCell删除效果手势问题解决
 description: 自定义TableCell删除效果手势问题解决
-category: blog
+catalog: true
+tags:
+    - iOS
+    - 手势
 ---
 
 今天尝试给UITableViewCell增加自定义左滑手势，发现ContentView的frame是无法修改的，只能在上面增加一层MyContentView，并加上一个pan手势，当往左开始移动的时候，然后在MyContentView下插入一个UIButton。然后效果出来了，但是，但是发现UITableView上下方向无法滑动了。

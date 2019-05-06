@@ -2,7 +2,10 @@
 layout: post
 title:  自动适配多种尺寸占位图（带缓存）
 description: 自动适配多种尺寸占位图（带缓存）
-category: blog
+catalog: true
+tags:
+    - iOS
+    - 占位图
 ---
 
 ```
