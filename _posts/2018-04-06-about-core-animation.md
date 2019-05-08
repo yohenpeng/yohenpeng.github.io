@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 核心动画读书笔记(一)
+title: 核心动画读书笔记
 subTitle: 你看到不一定是对的
 description: 核心动画读书笔记
 catalog: true
