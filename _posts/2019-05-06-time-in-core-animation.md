@@ -9,7 +9,7 @@ tags:
     - 动画时间
 ---
 
-##时间概念
+## 时间概念
 首先来看一个时间函数CACurrentMediaTime(),Apple的官方说明是：
 *Returns the current CoreAnimation absolute time. This is the result of calling mach_absolute_time () and converting the units to seconds.*
 
@@ -26,7 +26,7 @@ tags:
 [layer convert:CACurrentMediaTime() fromLayer:nil]
 ```
 
-##begin、speed、timeOffset对t的影响
+## begin、speed、timeOffset对t的影响
 这里就不去猜begin、speed、timeOffset和图层时间t的关系了，直接去到CAMediaTiming.h头文件找到他们的关系：
 ```
 t = (tp - begin) * speed + timeOffset;
@@ -66,7 +66,7 @@ dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), di
 
 我们到过了2s，后者的时间就过了4s，比前后快了2s，看来就像快进了一倍。
 
-##begin、speed、timeOffset之间的关系
+## begin、speed、timeOffset之间的关系
 一个layer初始状态下，而且superLayer没有改变begin、speed、timeOffset情况下，本地图层时间t就是CACurrentMediaTime()，因为根据公式没有改变属性的layer的speed为1，begin和timeOffset为0，
 ```
 t = (tp - 0) * 1 + 0 = tp = CACurrentMediaTime();
@@ -81,7 +81,7 @@ NSLog(@"CACurrentMediaTime():%0.2f",CACurrentMediaTime());
 NSLog(@"layer t :%0.2f",[self.layer_red convertTime:CACurrentMediaTime() fromLayer:nil]);
 ```
 
-##动画暂停暂停的和恢复
+## 动画暂停暂停的和恢复
 暂停的话，也就是本地时间要静止，speed为0的本地图层时间才不会继续往前走，我们可以拿到当前图片本地图层时间,赋值给timeOffset就可以保证图层本地时间不变；
 ```
 CFTimeInterval t = [self.layer_red convertTime:CACurrentMediaTime() fromLayer:nil];
