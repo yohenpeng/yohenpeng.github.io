@@ -32,8 +32,8 @@ tags:
 t = (tp - begin) * speed + timeOffset;
 ```
 
-下面我们通过实验来验证来验证三者对t的影响
-1、beginTime（晚多少秒开始，受speed的影响）
+下面我们通过实验来验证来验证三者对t的影响:
+1. beginTime（晚多少秒开始，受speed的影响）
 
 self.view.layer.beginTime = 0;
 self.layer_red.beginTime = 1;
@@ -43,7 +43,7 @@ NSLog(@"t's time:%0.2f",[self.layer_red convertTime:CACurrentMediaTime() fromLay
 不改speed的情况下，我们可以看到后者要晚上1秒钟，如果self.view.layer和self.layer_red同时加入一个动画，那么后者就会晚1秒才才开始播放
 
 
-2、timeOffset (时间偏移量，不受speed的影响)
+2. timeOffset (时间偏移量，不受speed的影响)
 
 self.view.layer.beginTime = 0;
 self.layer_red.beginTime = 0;
@@ -54,7 +54,7 @@ NSLog(@"t's time:%0.2f",[self.layer_red convertTime:CACurrentMediaTime() fromLay
 我们看到后者比前者快1秒钟，如果加入动画的话，后者则直接从1秒处播放，前面1s我们都看不见
 
 
-3、speed（时间流逝的速度）
+3. speed（时间流逝的速度）
 self.layer_red.beginTime = 0;
 self.layer_red.timeOffset = 0;
 self.layer_red.speed = 2;
